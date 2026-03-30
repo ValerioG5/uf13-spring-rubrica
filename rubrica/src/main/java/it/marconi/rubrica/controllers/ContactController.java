@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 import it.marconi.rubrica.domain.Contact;
 import it.marconi.rubrica.domain.ContactForm;
 import it.marconi.rubrica.services.ContactService;
+import jakarta.validation.Valid;
 
 @Controller
 public class ContactController {
@@ -41,11 +43,17 @@ public class ContactController {
 
     // endpoint per la richiesta POST, deve salvare il contatto nel DB
     @PostMapping("/new") 
-    public ModelAndView handleNewContact(@ModelAttribute ContactForm contactForm) {
+    public ModelAndView handleNewContact(
+        @ModelAttribute @Valid ContactForm contactForm,
+        BindingResult br        // esito della validazione (subito dopo parametro da validare)
+    ) {
+
+        // controllo l'esito della validazione
+        if (br.hasErrors())
+            return new ModelAndView("contact-form");
 
         Contact c = contactService.save(contactForm);
 
-        //return new ModelAndView("contact-form");
         return new ModelAndView("redirect:/contact?id=" + c.getId());
     }
 
